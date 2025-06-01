@@ -1,23 +1,32 @@
+# CMake的基础说明，写明最低版本要求
 cmake_minimum_required(VERSION 3.13)
+# 定义项目名称、版本、语言
 project(libdatachannel
 	VERSION 0.22.6
 	LANGUAGES CXX)
+# 设置项目描述
 set(PROJECT_DESCRIPTION "C/C++ WebRTC network library featuring Data Channels, Media Transport, and WebSockets")
-
+# 安装目录设置，包含GUN标准安装目录定义
+# 提供标准安装路径变量如CMAKE_INSTALL_BINDIR、CMAKE_INSTALL_LIBDIR等
 include(GNUInstallDirs)
 
-# Options
+# Options 定义多个编译选项，控制库的构建方式，这些选项可以在CMake 命令行中使用-D参数设置
 option(BUILD_SHARED_LIBS "Build shared library" ON)
 option(BUILD_SHARED_DEPS_LIBS "Build submodules as shared libraries" OFF)
+# 配置保密
 option(USE_GNUTLS "Use GnuTLS instead of OpenSSL" OFF)
 option(USE_MBEDTLS "Use Mbed TLS instead of OpenSSL" OFF)
+# 配置ICE
 option(USE_NICE "Use libnice instead of libjuice" OFF)
+# 优先使用系统库，而非子模块
 option(PREFER_SYSTEM_LIB "Prefer system libraries over submodules" OFF)
+# 使用的系统库，默认为off
 option(USE_SYSTEM_SRTP "Use system libSRTP" ${PREFER_SYSTEM_LIB})
 option(USE_SYSTEM_JUICE "Use system libjuice" ${PREFER_SYSTEM_LIB})
 option(USE_SYSTEM_USRSCTP "Use system libusrsctp" ${PREFER_SYSTEM_LIB})
 option(USE_SYSTEM_PLOG "Use system Plog" ${PREFER_SYSTEM_LIB})
 option(USE_SYSTEM_JSON "Use system Nlohmann JSON" ${PREFER_SYSTEM_LIB})
+
 option(NO_WEBSOCKET "Disable WebSocket support" OFF)
 option(NO_MEDIA "Disable media transport support" OFF)
 option(NO_EXAMPLES "Disable examples" OFF)
@@ -48,18 +57,24 @@ endif()
 if(NOT WARNINGS_AS_ERRORS AND NOT USE_SYSTEM_SRTP)
 	option(BUILD_WITH_WARNINGS "Add warning as error flags for libSRTP" OFF)
 endif()
-
+# 后续可以通过 include() 或 find_package() 直接调用该目录下的自定义 CMake 脚本。
+# 让CMake在指定的路径中可以查找库、头文件、可执行文件等
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
+# 控制生成的目标（如库和可执行文件）是否为位置无关代码，位置无关代码用于共享库
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(WIN32)
-	add_definitions(-DWIN32_LEAN_AND_MEAN)
+	# add_definitions 用于为项目中的所有源文件添加预处理器定义
+	# 宏的作用是在包含 Windows 头文件时，排除一些不常用的、体积较大的部分，从而减少编译时间和可执行文件的大小
+	add_definitions(-DWIN32_LEAN_AND_MEAN) 
 	if(MSVC)
-		add_definitions(-DNOMINMAX)
+		add_definitions(-DNOMINMAX) # 避免 Windows 头文件定义这些min max宏
+		# MSVC 编译器对一些标准 C 库函数（如 strcpy、sprintf 等）发出安全警告，因为这些函数可能存在缓冲区溢出的风险。
+		# 通过定义 _CRT_SECURE_NO_WARNINGS 宏，可以禁用这些安全警告，使代码能够正常编译而不产生这些警告信息。
 		add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 	endif()
 endif()
-
+# 定义库的源文件列表
 set(LIBDATACHANNEL_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/candidate.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/channel.cpp
@@ -93,7 +108,7 @@ set(LIBDATACHANNEL_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pacinghandler.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/rembhandler.cpp
 )
-
+# 定义头文件的列表
 set(LIBDATACHANNEL_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/candidate.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/channel.hpp
@@ -133,7 +148,7 @@ set(LIBDATACHANNEL_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/rembhandler.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/version.h
 )
-
+# 定义源文件的接口
 set(LIBDATACHANNEL_IMPL_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/certificate.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/channel.cpp
@@ -166,7 +181,7 @@ set(LIBDATACHANNEL_IMPL_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/wstransport.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/wshandshake.cpp
 )
-
+# 定义源文件接口的头文件 
 set(LIBDATACHANNEL_IMPL_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/certificate.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/channel.hpp
@@ -201,7 +216,7 @@ set(LIBDATACHANNEL_IMPL_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/wstransport.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/impl/wshandshake.hpp
 )
-
+# 定义测试源文件
 set(TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/test/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test/connectivity.cpp
@@ -216,7 +231,7 @@ set(TESTS_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/test/capi_websocketserver.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test/benchmark.cpp
 )
-
+# 测试资源文件
 set(TESTS_UWP_RESOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/test/uwp/tests/Logo.png
 	${CMAKE_CURRENT_SOURCE_DIR}/test/uwp/tests/package.appxManifest
@@ -226,7 +241,7 @@ set(TESTS_UWP_RESOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/test/uwp/tests/StoreLogo.png
 	${CMAKE_CURRENT_SOURCE_DIR}/test/uwp/tests/Windows_TemporaryKey.pfx
 )
-
+#
 set(BENCHMARK_UWP_RESOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/test/uwp/benchmark/Logo.png
 	${CMAKE_CURRENT_SOURCE_DIR}/test/uwp/benchmark/package.appxManifest
@@ -237,29 +252,31 @@ set(BENCHMARK_UWP_RESOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/test/uwp/benchmark/Windows_TemporaryKey.pfx
 )
 
-if(RTC_UPDATE_VERSION_HEADER)
-	configure_file (
+if(RTC_UPDATE_VERSION_HEADER) # 默认是off
+# configure_file将一个输入文件（通常是模板文件）进行配置，替换其中的 CMake 变量引用，然后生成一个新的输出文件。
+	configure_file ( 
 		${PROJECT_SOURCE_DIR}/cmake/version.h.in
 		${CMAKE_CURRENT_SOURCE_DIR}/include/rtc/version.h
 	)
 endif()
-
+# 添加库目标
 add_library(datachannel
 	${LIBDATACHANNEL_SOURCES}
 	${LIBDATACHANNEL_HEADERS}
 	${LIBDATACHANNEL_IMPL_SOURCES}
 	${LIBDATACHANNEL_IMPL_HEADERS})
+# 设置目标属性	版本号、CPP标准为17
 set_target_properties(datachannel PROPERTIES
-	VERSION ${PROJECT_VERSION}
-	SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-	CXX_STANDARD 17
+	VERSION ${PROJECT_VERSION} # 版本号
+	SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR} # 主版本号
+	CXX_STANDARD 17 
 	CXX_VISIBILITY_PRESET default)
 if(APPLE)
 	set_target_properties(datachannel PROPERTIES
 		VERSION ${PROJECT_VERSION_MAJOR}
 		SOVERSION ${PROJECT_VERSION_MAJOR})
 endif()
-
+# 静态库目标
 add_library(datachannel-static STATIC EXCLUDE_FROM_ALL
 	${LIBDATACHANNEL_SOURCES}
 	${LIBDATACHANNEL_HEADERS}
@@ -268,7 +285,9 @@ add_library(datachannel-static STATIC EXCLUDE_FROM_ALL
 set_target_properties(datachannel-static PROPERTIES
 	VERSION ${PROJECT_VERSION}
 	CXX_STANDARD 17)
-
+# 为指定的目标（这里是 datachannel）添加编译定义。
+# PRIVATE 表示这些编译定义仅对目标本身有效，不会传递给依赖该目标的其他目标。
+# RTC_EXPORTS 是一个宏定义，在 Windows 系统中，当构建共享库时，通常需要使用这个宏来标记哪些符号（函数、类等）需要被导出
 target_compile_definitions(datachannel PRIVATE RTC_EXPORTS)
 if (NOT BUILD_SHARED_LIBS)
 	target_compile_definitions(datachannel PUBLIC RTC_STATIC)
@@ -282,16 +301,18 @@ if(BUILD_SHARED_LIBS AND NOT BUILD_SHARED_DEPS_LIBS)
 else()
 	set(INSTALL_DEPS_LIBS ON)
 endif()
-
+# 使用posix线程库、使用pthread相关的编译链接标志
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package(Threads REQUIRED)
+# REQUIRED 表明线程库是项目必需的
+find_package(Threads REQUIRED) # Threads 是 CMake 内置的一个模块，用于查找系统中的线程库。
 
 if(USE_SYSTEM_PLOG)
 	find_package(plog REQUIRED)
 else()
 	set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
-	add_subdirectory(deps/plog EXCLUDE_FROM_ALL)
+	# 让 CMake 处理指定子目录中的 CMakeLists.txt 文件
+	add_subdirectory(deps/plog EXCLUDE_FROM_ALL) # EXCLUDE_FROM_ALL:默认不会构建这个子目录下的目标
 endif()
 
 if(SCTP_DEBUG)
@@ -322,10 +343,10 @@ else()
 			$<INSTALL_INTERFACE:>)
 	endif()
 endif()
-
+# 添加包含目录，编译器在查找头文件时会搜索的路径
 target_include_directories(datachannel PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> # 构建阶段
+    $<INSTALL_INTERFACE:include>) # 安装阶段
 target_include_directories(datachannel PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc
 	${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -340,6 +361,7 @@ target_include_directories(datachannel-static PUBLIC
 target_include_directories(datachannel-static PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/include/rtc
 	${CMAKE_CURRENT_SOURCE_DIR}/src)
+# 链接库
 target_link_libraries(datachannel-static PRIVATE
 	Threads::Threads
 	Usrsctp::Usrsctp

@@ -5,11 +5,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-
+/* 将 AV1 视频编码数据 按照 RTP（Real-time Transport Protocol）协议 进行打包。
+AV1 是一种开源的视频编码格式，而 RTP 是实时音视频传输的基础协议，
+该类的主要功能是将 AV1 视频帧分割成适合网络传输的 RTP 数据包，
+并处理相关的时序和分片逻辑。*/
 #ifndef RTC_AV1_RTP_PACKETIZER_H
 #define RTC_AV1_RTP_PACKETIZER_H
 
-#if RTC_ENABLE_MEDIA
+#if RTC_ENABLE_MEDIA // 默认enable
 
 #include "mediahandler.hpp"
 #include "nalunit.hpp"
