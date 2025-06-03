@@ -8,7 +8,7 @@
  */
 
  /*定义了一个完整的 WebRTC 会话描述协议 (SDP) 解析和生成库*/
-#ifndef RTC_DESCRIPTION_H
+#ifndef RTC_DESCRIPTION_H 
 #define RTC_DESCRIPTION_H
 
 #include "candidate.hpp"
